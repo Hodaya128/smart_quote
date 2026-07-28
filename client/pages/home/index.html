@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="../../images/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Home</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../header/header.css" />
+  <link rel="stylesheet" href="home.css" />
+</head>
+<body>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../scripts/auth.js"></script>
+<script src="../../header/header.js"></script>
+
+<!-- Chart.js מה-CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<main>
+    <div class="page-title-row">
+        <div>
+            <h1>מסך הבית</h1>
+            <p>מבט על - סקירה כללית של הנתונים</p>
+        </div>
+        <button class="button-add" onclick="window.location.href='../quotes/new/'">+ הצעה חדשה</button>
+    </div>
+
+    <!-- רשת של גרפים קבועים -->
+    <div class="charts-grid">
+        <div class="chart-card">
+            <h3>הכנסות ורווח לפי חודש</h3>
+            <canvas id="revenueByMonthCanvas"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>התפלגות סטטוסים</h3>
+            <canvas id="statusPieCanvas"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>10 לקוחות מובילים לפי רווח</h3>
+            <canvas id="profitByCustomerCanvas"></canvas>
+        </div>
+    </div>
+
+    <!-- אזור ה-AI -->
+    <div class="ai-section">
+        <h3>יצירת גרף מותאם עם AI</h3>
+        <p class="ai-help">כתבו שאלה בעברית או באנגלית. לדוגמה: "הצג הכנסות לפי חודש" או "כמה הצעות יש בכל סטטוס"</p>
+        <div class="ai-input-row">
+            <input type="text" id="aiPrompt" placeholder="למשל: הצג הכנסות לפי חודש" maxlength="500" />
+            <button id="aiGenerateBtn" class="button-add">צור גרף</button>
+        </div>
+        <div id="aiLoading" class="ai-loading" style="display:none;">יוצר גרף...</div>
+        <div id="aiChartError" class="ai-error"></div>
+        <div class="ai-chart-container">
+            <canvas id="aiDynamicCanvas"></canvas>
+        </div>
+    </div>
+</main>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../config.js"></script>
+<script src="../../scripts/ajaxCalls.js"></script>
+<script src="../../scripts/statusHelper.js"></script>
+<script src="home.js"></script>
+</body>
+</html>

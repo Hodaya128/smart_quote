@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="../../../images/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>עריכת לקוח</title>
+  <link rel="stylesheet" href="../../../styles.css" />
+  <link rel="stylesheet" href="../../../header/header.css" />
+  <script src="../../../scripts/auth.js"></script>
+</head>
+<body>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../../header/header.js"></script>
+
+<main>
+  <div class="page-title-row">
+    <div>
+      <h1>עריכת לקוח</h1>
+      <p>עדכון פרטי הלקוח</p>
+    </div>
+  </div>
+
+  <form id="editCustomerForm">
+    <div class="form-group">
+      <label>שם לקוח</label>
+      <input type="text" id="customerName" placeholder="שם הלקוח" required />
+    </div>
+    <div class="form-group">
+      <label>אימייל</label>
+      <input type="text" id="email" placeholder="אימייל" />
+    </div>
+    <div class="form-group">
+      <label>טלפון</label>
+      <input type="text" id="phone" placeholder="טלפון" />
+    </div>
+    <div class="form-group">
+      <label>כתובת</label>
+      <input type="text" id="address" placeholder="עיר, רחוב, מספר" />
+    </div>
+    <button type="submit" class="button-add" id="saveBtn">שמור</button>
+    <div id="loader" class="loader">
+      <label>טוען</label>
+      <img src="../../../images/loader.gif" style="width:40px;" />
+    </div>
+  </form>
+</main>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../../config.js"></script>
+<script src="../../../scripts/ajaxCalls.js"></script>
+<script src="editCustomer.js"></script>
+</body>
+</html>

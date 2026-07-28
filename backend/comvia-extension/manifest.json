@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Comvia Price Agent",
+  "version": "1.2.0",
+  "description": "שולף מחירי חוזה ותוצאות חיפוש (Farnell, NetComponents, Master Electronics) מהסשן המחובר של המשתמש ומחזיר אותם לשרת Comvia.",
+  "permissions": ["storage", "tabs", "scripting", "alarms", "cookies"],
+  "host_permissions": [
+    "https://*.farnell.com/*",
+    "https://*.netcomponents.com/*",
+    "https://*.arrow.com/*",
+    "https://*.masterelectronics.com/*"
+  ],
+  "optional_host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Comvia Price Agent"
+  }
+}

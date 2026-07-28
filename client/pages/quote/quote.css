@@ -1,0 +1,76 @@
+.quote-container {
+    background: #fff;
+    border: 1px solid #e0e6ed;
+    padding: 28px 32px;
+    margin-top: 8px;
+}
+
+.quote-header-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding-bottom: 20px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid #e0e6ed;
+    flex-wrap: wrap;
+}
+
+.quote-id {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.quote-customer {
+    font-size: 18px;
+}
+
+.quote-date {
+    font-size: 14px;
+}
+
+.quote-status {
+    font-size: 13px;
+    font-weight: 600;
+    background: #eaf4ff;
+    color: #2980b9;
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+.quote-totals-row {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.quote-total-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.quote-total-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.quote-total-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+}
+
+.quote-items-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 12px;
+}
+
+.quote-items-total-row td {
+    background: #f0f4f8;
+    border-top: 2px solid #d0d7de;
+}

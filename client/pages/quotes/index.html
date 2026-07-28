@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="../../images/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>הצעות מחיר</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../header/header.css" />
+</head>
+<body>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../scripts/auth.js"></script>
+<script src="../../header/header.js"></script>
+
+
+<main>
+  <div class="page-title-row">
+    <div>
+      <h1>הצעות מחיר</h1>
+      <p>ניהול וצפייה בכל הצעות המחיר</p>
+    </div>
+    <button class="button-add" onclick="window.location.href='new'">+ הצעה חדשה</button>
+  </div>
+
+  <div class="search-wrapper">
+    <img src="../../images/search.png" alt="" class="search-icon" />
+    <input type="text" id="searchInput" placeholder="חיפוש לפי לקוח..." />
+  </div>
+
+  <div id="quotesContainer"></div>
+</main>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../config.js"></script>
+<script src="../../scripts/ajaxCalls.js"></script>
+<script src="../../scripts/statusHelper.js"></script>
+
+<!-- Quote Detail Modal -->
+<div id="quoteDetailModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:32px 36px;width:92%;max-width:900px;max-height:88vh;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,0.18);position:relative;direction:rtl;">
+    <button id="closeQuoteModal" style="position:absolute;top:16px;left:20px;background:none;border:none;font-size:26px;cursor:pointer;color:#888;line-height:1;">&times;</button>
+
+    <h2 id="modalQuoteTitle" style="margin:0 0 20px;font-size:20px;font-weight:700;color:#222;"></h2>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:24px;">
+      <div><div style="font-size:12px;font-weight:600;color:#888;text-transform:uppercase;margin-bottom:4px;">לקוח</div><div id="modalCustName" style="font-size:15px;font-weight:500;color:#333;"></div></div>
+      <div><div style="font-size:12px;font-weight:600;color:#888;text-transform:uppercase;margin-bottom:4px;">תאריך</div><div id="modalQuoteDate" style="font-size:15px;font-weight:500;color:#333;"></div></div>
+      <div><div style="font-size:12px;font-weight:600;color:#888;text-transform:uppercase;margin-bottom:4px;">סטטוס</div><div id="modalQuoteStatus" style="font-size:15px;font-weight:500;color:#333;"></div></div>
+      <div><div style="font-size:12px;font-weight:600;color:#888;text-transform:uppercase;margin-bottom:4px;">סכום</div><div id="modalQuoteTotal" style="font-size:15px;font-weight:500;color:#333;"></div></div>
+      <div><div style="font-size:12px;font-weight:600;color:#888;text-transform:uppercase;margin-bottom:4px;">רווח</div><div id="modalQuoteProfit" style="font-size:15px;font-weight:500;color:#333;"></div></div>
+      <div><div style="font-size:12px;font-weight:600;color:#888;text-transform:uppercase;margin-bottom:4px;">מתמחר</div><div id="modalQuotePricer" style="font-size:15px;font-weight:500;color:#333;"></div></div>
+    </div>
+
+    <div style="border-top:1px solid #eee;padding-top:20px;">
+      <h3 style="font-size:16px;font-weight:700;color:#333;margin:0 0 14px;">פריטים</h3>
+      <div id="modalItemsLoading" style="color:#aaa;font-size:14px;padding:16px 0;">טוען פריטים...</div>
+      <table id="modalItemsTable" class="data-table" style="display:none;">
+        <thead>
+          <tr>
+            <th>מק"ט</th><th>תיאור</th><th>כמות</th><th>ספק</th><th>תצורה</th><th>עלות</th><th>מרווח</th><th>מחיר</th>
+          </tr>
+        </thead>
+        <tbody id="modalItemsBody"></tbody>
+        <tfoot id="modalItemsFoot"></tfoot>
+      </table>
+    </div>
+
+    <div style="margin-top:24px;display:flex;gap:10px;justify-content:flex-start;flex-wrap:wrap;">
+      <button id="modalExportExcel" style="background:#217346;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">ייצוא ל-Excel</button>
+      <button id="modalExportPdf" style="background:#e67e22;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">ייצוא ל-PDF</button>
+      <button id="modalContinueEdit" style="display:none;background:#5b7fa6;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;">המשך עריכה</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="quotes.js"></script>
+</body>
+</html>

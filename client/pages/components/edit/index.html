@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="../../../images/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>עריכת רכיב</title>
+  <link rel="stylesheet" href="../../../styles.css" />
+  <link rel="stylesheet" href="../../../header/header.css" />
+  <script src="../../../scripts/auth.js"></script>
+</head>
+<body>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../../header/header.js"></script>
+
+<main>
+  <div class="page-title-row">
+    <div>
+      <h1>עריכת רכיב</h1>
+      <p>עדכון פרטי הרכיב</p>
+    </div>
+  </div>
+
+  <form id="editComponentForm">
+    <div class="form-group">
+      <label>תיאור</label>
+      <input type="text" id="description" placeholder="תיאור המוצר" required />
+    </div>
+    <div class="form-group">
+      <label>יחידת בסיס</label>
+      <input type="text" id="baseUnit" placeholder="pcs" />
+    </div>
+    <div class="form-group">
+      <label>מק"ט חלופי</label>
+      <input type="text" id="alternativeSKU" placeholder="CPU-002" />
+    </div>
+    <button type="submit" class="button-add" id="saveBtn">שמור</button>
+    <div id="loader" class="loader">
+      <label>טוען</label>
+      <img src="../../../images/loader.gif" style="width:40px;" />
+    </div>
+  </form>
+</main>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../../config.js"></script>
+<script src="../../../scripts/ajaxCalls.js"></script>
+<script src="editComponent.js"></script>
+</body>
+</html>

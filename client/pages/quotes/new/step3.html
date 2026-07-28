@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="../../../images/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>הצעה חדשה — שלב 3</title>
+  <link rel="stylesheet" href="../../../styles.css" />
+  <link rel="stylesheet" href="../../../header/header.css" />
+  <link rel="stylesheet" href="newQuote.css" />
+</head>
+<body>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../../scripts/auth.js"></script>
+<script src="../../../header/header.js"></script>
+
+<main>
+
+  <!-- Stepper -->
+  <div class="stepper">
+    <div class="step-item">
+      <div class="step-circle done">&#10003;</div>
+      <span class="step-label done">הזנת פריטים</span>
+    </div>
+    <div class="step-connector done"></div>
+    <div class="step-item">
+      <div class="step-circle done">&#10003;</div>
+      <span class="step-label done">סקירה ועריכה</span>
+    </div>
+    <div class="step-connector done"></div>
+    <div class="step-item">
+      <div class="step-circle active">3</div>
+      <span class="step-label active">ייצוא</span>
+    </div>
+  </div>
+
+  <!-- Card -->
+  <div class="wizard-card">
+    <div class="page-title-row" style="padding-top:0; padding-bottom: 20px;">
+      <div>
+        <h1>הצעה חדשה</h1>
+        <p>שלב 3 מתוך 3 — סיכום וייצוא ההצעה</p>
+        <p id="customerDisplay" style="font-weight:600; color:#5b7fa6;"></p>
+      </div>
+    </div>
+
+    <!-- Summary table (read-only) -->
+    <div style="overflow-x: auto;">
+      <table class="data-table" id="summaryTable">
+        <thead>
+          <tr>
+            <th>מק"ט</th>
+            <th>תיאור פריט</th>
+            <th>כמות</th>
+            <th>ספק נבחר</th>
+            <th>תצורת אספקה</th>
+            <th>מחיר יחידה ($)</th>
+            <th>מחיר מתחרים ($)</th>
+            <th>רווח %</th>
+            <th>מחיר סופי ($)</th>
+          </tr>
+        </thead>
+        <tbody id="summaryBody"></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="8" style="text-align:left;">סה"כ</td>
+            <td id="totalFinal"><strong>--</strong></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- Export block -->
+    <div class="export-block">
+      <p>הצעת המחיר מוכנה לייצוא:</p>
+      <button class="button-add" id="exportExcel">ייצוא ל-Excel</button>
+      <button class="button-add" id="exportPdf" style="background:#e67e22">ייצוא ל-PDF</button>
+    </div>
+
+    <!-- Navigation -->
+    <div class="wizard-actions">
+      <button class="btn-cancel" onclick="window.location.href='step2.html'">חזרה לשלב 2 &#8594;</button>
+      <button class="button-add" id="finishBtn">שמור וסיים</button>
+    </div>
+  </div>
+
+</main>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../../config.js"></script>
+<!-- Export libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+<script>
+  const saved = localStorage.getItem('quoteItems');
+  const demoItems = saved ? JSON.parse(saved) : [];
+  const customerName = localStorage.getItem('quoteCustomerName') || '';
+  const customerID = localStorage.getItem('quoteCustomerID');
+
+  if (customerName) {
+    $('#customerDisplay').text('לקוח: ' + customerName);
+  }
+
+  function calcFinal(unitPrice, margin) {
+    return (unitPrice * (1 + margin / 100)).toFixed(2);
+  }
+
+  function renderSummary() {
+    const tbody = $('#summaryBody');
+    tbody.empty();
+    let total = 0;
+
+    demoItems.forEach(item => {
+      const finalUnit = parseFloat(calcFinal(item.unitPrice, item.margin));
+      const rowTotal = (item.qty * finalUnit).toFixed(2);
+      total += parseFloat(rowTotal);
+
+      const priceDisplay = item.unitPrice > 0 ? '$' + item.unitPrice.toFixed(2) : 'N/A';
+      const compDisplay = item.compPrice > 0 ? '$' + item.compPrice.toFixed(2) : 'N/A';
+
+      tbody.append(`
+        <tr>
+          <td>${item.sku}</td>
+          <td>${item.desc || ''}</td>
+          <td>${item.qty}</td>
+          <td>${item.supplier || 'N/A'}</td>
+          <td>${item.config}</td>
+          <td>${priceDisplay}</td>
+          <td>${compDisplay}</td>
+          <td>${item.margin}%</td>
+          <td><strong>${item.unitPrice > 0 ? '$' + finalUnit.toFixed(2) : 'N/A'}</strong></td>
+        </tr>
+      `);
+    });
+
+    $('#totalFinal').html('<strong>$' + total.toFixed(2) + '</strong>');
+  }
+
+  renderSummary();
+
+  // =============================================
+  // ===== Export helpers =====
+  // =============================================
+
+  function getExportData() {
+    const today = new Date();
+    const dateStr = today.getDate() + '/' + (today.getMonth() + 1) + '/' + today.getFullYear();
+    let grandTotal = 0;
+
+    const rows = demoItems.map(item => {
+      const finalUnit = parseFloat(calcFinal(item.unitPrice, item.margin));
+      const rowTotal = item.qty * finalUnit;
+      grandTotal += rowTotal;
+
+      return {
+        sku: item.sku,
+        desc: item.desc || '',
+        qty: item.qty,
+        config: item.config,
+        finalUnit: finalUnit,
+        rowTotal: rowTotal
+      };
+    });
+
+    return { rows, grandTotal, dateStr, customerName };
+  }
+
+  // =============================================
+  // ===== Excel Export =====
+  // =============================================
+
+  $('#exportExcel').click(function() {
+    const { rows, grandTotal, dateStr } = getExportData();
+
+    // Header rows
+    const draftIdXl = localStorage.getItem('quoteFromDraft');
+    const quoteLabelXl = draftIdXl ? 'Quote: #' + draftIdXl : 'Quote';
+    const wsData = [
+      [quoteLabelXl],
+      ['Customer: ' + customerName],
+      ['Date: ' + dateStr],
+      [],
+      ['SKU', 'Description', 'Quantity', 'Supply Config', 'Unit Price ($)', 'Row Total ($)']
+    ];
+
+    // Data rows
+    rows.forEach(r => {
+      wsData.push([r.sku, r.desc, r.qty, r.config, r.finalUnit, r.rowTotal]);
+    });
+
+    // Total row
+    wsData.push([]);
+    wsData.push(['', '', '', '', 'Total:', grandTotal]);
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // Column widths
+    ws['!cols'] = [
+      { wch: 18 }, // SKU
+      { wch: 35 }, // Description
+      { wch: 10 }, // Qty
+      { wch: 14 }, // Config
+      { wch: 16 }, // Unit Price
+      { wch: 16 }, // Row Total
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Quote');
+    XLSX.writeFile(wb, 'Quote_' + customerName.replace(/\s/g, '_') + '_' + dateStr.replace(/\//g, '-') + '.xlsx');
+  });
+
+  // =============================================
+  // ===== PDF Export =====
+  // =============================================
+
+  $('#exportPdf').click(function() {
+    const { jsPDF } = window.jspdf;
+    const { rows, grandTotal, dateStr } = getExportData();
+
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    // Load logo and generate PDF
+    const logoImg = new Image();
+    logoImg.crossOrigin = 'anonymous';
+    logoImg.onload = function() {
+      generatePdf(doc, logoImg, rows, grandTotal, dateStr);
+    };
+    logoImg.onerror = function() {
+      generatePdf(doc, null, rows, grandTotal, dateStr);
+    };
+    logoImg.src = '../../../images/logo.png';
+  });
+
+  function renderHebrewText(doc, text, x, y) {
+    // Render Hebrew text by drawing it on a canvas and adding as image
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const fontSize = 14;
+    ctx.font = fontSize + 'px Arial';
+    const textWidth = ctx.measureText(text).width;
+    canvas.width = textWidth + 10;
+    canvas.height = fontSize + 10;
+    ctx.font = fontSize + 'px Arial';
+    ctx.direction = 'rtl';
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#333';
+    ctx.fillText(text, canvas.width - 2, fontSize + 2);
+    const imgData = canvas.toDataURL('image/png');
+    const imgW = canvas.width * 0.26; // scale to mm
+    const imgH = canvas.height * 0.26;
+    doc.addImage(imgData, 'PNG', x - imgW, y - imgH + 2, imgW, imgH);
+  }
+
+  function generatePdf(doc, logoImg, rows, grandTotal, dateStr) {
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let y = 15;
+
+    // Logo (centered at top right)
+    if (logoImg) {
+      const logoW = 45;
+      const logoH = (logoImg.height / logoImg.width) * logoW;
+      doc.addImage(logoImg, 'PNG', pageWidth - logoW - 15, y, logoW, logoH);
+    }
+
+    // Quote number
+    const draftId = localStorage.getItem('quoteFromDraft');
+    const quoteLabel = draftId ? 'Quote: #' + draftId : 'Quote';
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text(quoteLabel, 15, y + 10);
+
+    y += 22;
+
+    // Date
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Date: ' + dateStr, 15, y);
+
+    // Customer name - render as image to support Hebrew
+    renderHebrewText(doc, 'Customer: ' + customerName, pageWidth - 15, y);
+
+    y += 10;
+
+    // Separator line
+    doc.setDrawColor(91, 127, 166);
+    doc.setLineWidth(0.5);
+    doc.line(15, y, pageWidth - 15, y);
+    y += 8;
+
+    // Table
+    const tableHead = [['SKU', 'Description', 'Qty', 'Supply Config', 'Unit Price ($)', 'Row Total ($)']];
+    const tableBody = rows.map(r => [
+      r.sku,
+      r.desc,
+      r.qty.toString(),
+      r.config,
+      '$' + r.finalUnit.toFixed(2),
+      '$' + r.rowTotal.toFixed(2)
+    ]);
+
+    // Total row
+    tableBody.push(['', '', '', '', 'Total:', '$' + grandTotal.toFixed(2)]);
+
+    doc.autoTable({
+      startY: y,
+      head: tableHead,
+      body: tableBody,
+      theme: 'grid',
+      styles: {
+        fontSize: 10,
+        cellPadding: 3,
+        halign: 'center',
+        font: 'helvetica'
+      },
+      headStyles: {
+        fillColor: [91, 127, 166],
+        textColor: 255,
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      columnStyles: {
+        0: { halign: 'left', cellWidth: 28 },
+        1: { halign: 'left', cellWidth: 50 },
+        2: { halign: 'center', cellWidth: 15 },
+        3: { halign: 'center', cellWidth: 25 },
+        4: { halign: 'right', cellWidth: 28 },
+        5: { halign: 'right', cellWidth: 28 },
+      },
+      didParseCell: function(data) {
+        // Bold the total row
+        if (data.row.index === tableBody.length - 1) {
+          data.cell.styles.fontStyle = 'bold';
+          data.cell.styles.fillColor = [240, 244, 248];
+        }
+      },
+      margin: { left: 15, right: 15 }
+    });
+
+    // Footer
+    const finalY = doc.autoTable.previous.finalY + 15;
+    doc.setFontSize(9);
+    doc.setTextColor(150);
+    doc.text('* This quote is valid for 30 days from the date of issue.', pageWidth / 2, finalY, { align: 'center' });
+
+    doc.save('Quote_' + customerName.replace(/\s/g, '_') + '_' + dateStr.replace(/\//g, '-') + '.pdf');
+  }
+
+  // =============================================
+  // ===== Save & Finish =====
+  // =============================================
+
+  $('#finishBtn').click(function() {
+    if (!customerID) {
+      alert('לא נבחר לקוח. חזרי לשלב 1.');
+      return;
+    }
+
+    const btn = $(this);
+    btn.prop('disabled', true).text('שומר...');
+
+    const draftId = localStorage.getItem('quoteFromDraft');
+    const loggedUser = JSON.parse(localStorage.getItem('userLoggedIn') || '{}');
+    const request = {
+      quoteID: draftId ? parseInt(draftId) : null,
+      customerID: parseInt(customerID),
+      createdBy: loggedUser.userID || 0,
+      status: "Completed",
+      items: demoItems.map(item => {
+        let supplierLink = '';
+        if (item.allSuppliers && item.selectedSupplierIdx >= 0) {
+          supplierLink = item.allSuppliers[item.selectedSupplierIdx]?.link || '';
+        }
+
+        return {
+          componentSKU: item.sku,
+          description: item.desc || '',
+          supplierName: item.supplier || '',
+          supplierLink: supplierLink,
+          supplyConfig: item.config,
+          quantity: item.qty,
+          costPriceMoment: item.unitPrice || 0,
+          profitMargin: item.margin || 0,
+          finalPriceToClient: item.qty * parseFloat(calcFinal(item.unitPrice || 0, item.margin || 0))
+        };
+      })
+    };
+
+    $.ajax({
+      url: BASE_URL + '/api/quotes/create-from-search',
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify(request),
+      success: function(res) {
+        alert('הצעה #' + res.quoteID + ' נשמרה בהצלחה!');
+        localStorage.removeItem('quoteItems');
+        localStorage.removeItem('quoteCustomerID');
+        localStorage.removeItem('quoteCustomerName');
+        localStorage.removeItem('quoteFromDraft');
+        window.location.href = '../index.html';
+      },
+      error: function(xhr) {
+        btn.prop('disabled', false).text('שמור וסיים');
+        const detail = xhr.responseJSON?.detail || xhr.responseJSON?.message || 'שגיאה לא ידועה';
+        alert('שגיאה בשמירת ההצעה: ' + detail);
+      }
+    });
+  });
+</script>
+</body>
+</html>

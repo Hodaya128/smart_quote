@@ -1,0 +1,12 @@
+## Build results
+[Bb]in/
+[Oo]bj/
+
+## Visual Studio
+.vs/
+*.user
+
+## Publish output (regenerate with dotnet publish)
+publish_ruppin/
+comviaServer_ruppin/
+*.zip

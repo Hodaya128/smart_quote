@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="../../../images/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>הצעה חדשה — שלב 1</title>
+  <link rel="stylesheet" href="../../../styles.css" />
+  <link rel="stylesheet" href="../../../header/header.css" />
+  <link rel="stylesheet" href="newQuote.css" />
+</head>
+<body>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../../scripts/auth.js"></script>
+<script src="../../../header/header.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<main>
+
+  <!-- Stepper -->
+  <div class="stepper">
+    <div class="step-item">
+      <div class="step-circle active">1</div>
+      <span class="step-label active">הזנת פריטים</span>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-circle">2</div>
+      <span class="step-label">סקירה ועריכה</span>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-circle">3</div>
+      <span class="step-label">ייצוא</span>
+    </div>
+  </div>
+
+  <!-- Card -->
+  <div class="wizard-card">
+    <div class="page-title-row" style="padding-top:0; padding-bottom: 20px;">
+      <div>
+        <h1>הצעה חדשה</h1>
+        <p>שלב 1 מתוך 3 — הזנת פריטים להצעה</p>
+      </div>
+    </div>
+
+    <!-- Customer selection -->
+    <div class="customer-section">
+      <label class="customer-label">לקוח:</label>
+      <div class="autocomplete-wrapper">
+        <input type="text" id="customerSearch" placeholder="הקלד שם לקוח או אימייל" autocomplete="off" />
+        <div id="customerDropdown" class="autocomplete-dropdown"></div>
+      </div>
+      <input type="hidden" id="customerID" />
+      <span id="selectedCustomer" class="selected-customer"></span>
+      <button class="btn-add-row" id="newCustomerBtn" style="margin:0;">+ לקוח חדש</button>
+    </div>
+
+    <!-- Entry table -->
+    <table class="entry-table" id="itemsTable">
+      <thead>
+        <tr>
+          <th>מק"ט</th>
+          <th>כמות</th>
+          <th>תצורת אספקה</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="itemsBody">
+        <tr>
+          <td><input type="text"  /></td>
+          <td><input type="number" min="1"  value="" /></td>
+          <td>
+            <select>
+                <option value="" selected>בחר תצורת אספקה</option>
+              <option value="Reel">Reel</option>
+              <option value="Cut Tape">Cut Tape</option>
+              <option value="Bulk">Bulk</option>
+            </select>
+          </td>
+          <td><button class="btn-delete-row" onclick="deleteRow(this)" title="מחק שורה">✕</button></td>
+        </tr>
+      </tbody>
+    </table>
+
+   <!-- <button class="btn-add-row" onclick="addRow()">+ הוסף שורה</button> -->
+<div style="display:flex; gap:10px; margin-top:15px;">
+    <button class="btn-add-row" onclick="addRow()">+ הוסף שורה</button>
+
+    <button class="btn-add-row" id="importExcelBtn">
+        ייבוא מאקסל
+    </button>
+
+    <input
+        type="file"
+        id="excelImportInput"
+        accept=".xlsx,.xls"
+        style="display:none;"
+    />
+</div>
+    <!-- Navigation -->
+    <div class="wizard-actions">
+      <button class="btn-cancel" onclick="window.location.href='../index.html'">ביטול</button>
+      <button class="btn-cancel" id="resetBtn">איפוס</button>
+      <button class="button-add" id="nextBtn">המשך לשלב 2</button>
+    </div>
+  </div>
+
+  <!-- New Customer Modal -->
+  <div id="customerModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+      <h2>לקוח חדש</h2>
+      <div class="modal-form">
+        <label>שם לקוח *</label>
+        <input type="text" id="modalCustName" placeholder="שם הלקוח" />
+        <label>אימייל</label>
+        <input type="email" id="modalCustEmail" placeholder="email@example.com" />
+        <label>טלפון</label>
+        <input type="text" id="modalCustPhone" placeholder="050-0000000" />
+        <label>כתובת</label>
+        <input type="text" id="modalCustAddress" placeholder="כתובת" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="modalCancel">ביטול</button>
+        <button class="button-add" id="modalSave">שמור</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../../config.js"></script>
+<script>
+  let allCustomers = [];
+
+  // Load customers for autocomplete
+  $.get(BASE_URL + '/api/customers', function(data) {
+    allCustomers = data;
+  });
+
+  // Restore saved items
+  const saved = localStorage.getItem('quoteItems');
+  if (saved) {
+    const items = JSON.parse(saved);
+    $('#itemsBody').empty();
+    items.forEach(item => {
+      $('#itemsBody').append(`
+        <tr>
+          <td><input type="text" placeholder='לדוגמה: RES-10K' value="${item.sku}" /></td>
+          <td><input type="number" min="1" placeholder="0" value="${item.qty}" /></td>
+          <td>
+            <select>
+              <option value="Reel" ${item.config==='Reel'?'selected':''}>Reel</option>
+              <option value="Cut Tape" ${item.config==='Cut Tape'?'selected':''}>Cut Tape</option>
+              <option value="Bulk" ${item.config==='Bulk'?'selected':''}>Bulk</option>
+            </select>
+          </td>
+          <td><button class="btn-delete-row" onclick="deleteRow(this)" title="מחק שורה">✕</button></td>
+        </tr>`);
+    });
+  }
+
+  // Restore selected customer
+  const savedCustID = localStorage.getItem('quoteCustomerID');
+  const savedCustName = localStorage.getItem('quoteCustomerName');
+  if (savedCustID && savedCustName) {
+    $('#customerID').val(savedCustID);
+    $('#customerSearch').val(savedCustName);
+    $('#selectedCustomer').text(savedCustName).show();
+  }
+
+  // Autocomplete
+  $('#customerSearch').on('input', function() {
+    const query = $(this).val().toLowerCase().trim();
+    $('#customerID').val('');
+    $('#selectedCustomer').text('').hide();
+
+    if (query.length < 1) {
+      $('#customerDropdown').hide();
+      return;
+    }
+
+    const matches = allCustomers.filter(c =>
+      c.customerName.toLowerCase().includes(query) ||
+      (c.email && c.email.toLowerCase().includes(query))
+    ).slice(0, 8);
+
+    if (matches.length === 0) {
+      $('#customerDropdown').hide();
+      return;
+    }
+
+    const html = matches.map(c =>
+      `<div class="autocomplete-item" data-id="${c.customerID}" data-name="${c.customerName}">
+        <strong>${c.customerName}</strong>
+        <span style="color:#888; font-size:12px;">${c.email || ''}</span>
+      </div>`
+    ).join('');
+
+    $('#customerDropdown').html(html).show();
+  });
+
+  $(document).on('click', '.autocomplete-item', function() {
+    const id = $(this).data('id');
+    const name = $(this).data('name');
+    $('#customerID').val(id);
+    $('#customerSearch').val(name);
+    $('#selectedCustomer').text(name).show();
+    $('#customerDropdown').hide();
+    localStorage.setItem('quoteCustomerID', id);
+    localStorage.setItem('quoteCustomerName', name);
+  });
+
+  $(document).click(function(e) {
+    if (!$(e.target).closest('.autocomplete-wrapper').length) {
+      $('#customerDropdown').hide();
+    }
+  });
+
+  // New Customer Modal
+  $('#newCustomerBtn').click(() => $('#customerModal').show());
+  $('#modalCancel').click(() => $('#customerModal').hide());
+
+  $('#modalSave').click(function() {
+    const name = $('#modalCustName').val().trim();
+    if (!name) { alert('שם לקוח הוא שדה חובה'); return; }
+
+    $.ajax({
+      url: BASE_URL + '/api/customers',
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({
+        customerName: name,
+        email: $('#modalCustEmail').val().trim(),
+        phone: $('#modalCustPhone').val().trim(),
+        address: $('#modalCustAddress').val().trim()
+      }),
+      success: function(newCust) {
+        allCustomers.push(newCust);
+        $('#customerID').val(newCust.customerID);
+        $('#customerSearch').val(newCust.customerName);
+        $('#selectedCustomer').text(newCust.customerName).show();
+        localStorage.setItem('quoteCustomerID', newCust.customerID);
+        localStorage.setItem('quoteCustomerName', newCust.customerName);
+        $('#customerModal').hide();
+        $('#modalCustName, #modalCustEmail, #modalCustPhone, #modalCustAddress').val('');
+      },
+      error: function() { alert('שגיאה ביצירת לקוח'); }
+    });
+  });
+
+  // Row management
+  function addRow() {
+    $('#itemsBody').append(`
+      <tr>
+        <td><input type="text" placeholder='לדוגמה: RES-10K' /></td>
+        <td><input type="number" min="1" placeholder="0" /></td>
+        <td>
+          <select>
+            <option value="Reel">Reel</option>
+            <option value="Cut Tape">Cut Tape</option>
+            <option value="Bulk">Bulk</option>
+          </select>
+        </td>
+        <td><button class="btn-delete-row" onclick="deleteRow(this)" title="מחק שורה">✕</button></td>
+      </tr>`);
+  }
+
+  function deleteRow(btn) {
+    if ($('#itemsBody tr').length <= 1) { alert('חייבת להיות לפחות שורה אחת.'); return; }
+    $(btn).closest('tr').remove();
+  }
+  $('#importExcelBtn').click(function () {
+  $('#excelImportInput').click();
+});
+
+$('#excelImportInput').on('change', function (e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = function (event) {
+    const data = new Uint8Array(event.target.result);
+    const workbook = XLSX.read(data, { type: 'array' });
+
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+
+    const rows = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+
+    if (!rows.length) {
+      alert('קובץ האקסל ריק או לא תקין');
+      return;
+    }
+
+    $('#itemsBody').empty();
+
+    let importedCount = 0;
+    let skippedCount = 0;
+
+    rows.forEach(row => {
+      const sku =
+        row.SKU ||
+        row.sku ||
+        row['מק"ט'] ||
+        row['מקט'] ||
+        row['Part Number'] ||
+        '';
+
+      const qty =
+        parseInt(row.Quantity || row.quantity || row['כמות'] || row.Qty || row.qty) || 1;
+
+      const config =
+        row.SupplyConfig ||
+        row['תצורת אספקה'] ||
+        row.Config ||
+        'Reel';
+
+      if (!sku) {
+        skippedCount++;
+        return;
+      }
+
+      $('#itemsBody').append(`
+      importedCount++;
+        <tr>
+          <td><input type="text" value="${sku}" /></td>
+          <td><input type="number" min="1" value="${qty}" /></td>
+          <td>
+            <select>
+              <option value="Reel" ${config === 'Reel' ? 'selected' : ''}>Reel</option>
+              <option value="Cut Tape" ${config === 'Cut Tape' ? 'selected' : ''}>Cut Tape</option>
+              <option value="Bulk" ${config === 'Bulk' ? 'selected' : ''}>Bulk</option>
+            </select>
+          </td>
+          <td><button class="btn-delete-row" onclick="deleteRow(this)" title="מחק שורה">✕</button></td>
+        </tr>
+      `);
+        importedCount++;
+
+    });
+
+    if ($('#itemsBody tr').length === 0) {
+      addRow();
+      alert('לא נמצאו שורות עם מק"ט בקובץ');
+      return;
+    }
+
+    alert(`יובאו ${importedCount} פריטים בהצלחה. דולגו ${skippedCount} שורות.`);
+  };
+
+  reader.readAsArrayBuffer(file);
+});
+
+  $('#resetBtn').click(() => {
+    localStorage.removeItem('quoteItems');
+    localStorage.removeItem('quoteCustomerID');
+    localStorage.removeItem('quoteCustomerName');
+    $('#itemsBody').empty();
+    addRow();
+    $('#customerSearch').val('');
+    $('#customerID').val('');
+    $('#selectedCustomer').text('').hide();
+  });
+
+  function collectItems() {
+    const items = [];
+    document.querySelectorAll('#itemsBody tr').forEach(tr => {
+      const inputs = tr.querySelectorAll('input');
+      const sku = inputs[0].value.trim();
+      const qty = parseInt(inputs[1].value) || 1;
+      const config = tr.querySelector('select').value;
+      if (sku) items.push({ sku, qty, config, desc: '', supplier: '', unitPrice: 0, compPrice: 0, margin: 0 });
+    });
+    return items;
+  }
+
+  function validateForm() {
+    if (!$('#customerID').val()) { alert('יש לבחור לקוח.'); return false; }
+    const items = collectItems();
+    if (items.length === 0) { alert('יש להזין לפחות פריט אחד.'); return false; }
+    return true;
+  }
+
+  // Continue to step 2
+  $('#nextBtn').click(() => {
+    if (!validateForm()) return;
+    localStorage.setItem('quoteItems', JSON.stringify(collectItems()));
+    window.location.href = 'step2.html';
+  });
+
+</script>
+</body>
+</html>

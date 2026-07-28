@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="../../images/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>התחברות</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="login.css" />
+</head>
+<body>
+
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-logo">SmartQuotes</div>
+    <h2 class="login-title">התחברות</h2>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label>אימייל</label>
+        <input type="email" id="email" required placeholder="your@email.com" />
+      </div>
+      <div class="form-group">
+        <label>סיסמה</label>
+        <input type="password" id="password" required placeholder="••••••••" />
+      </div>
+      <button type="submit" class="button-add login-btn">התחבר</button>
+    </form>
+
+    <div class="login-footer">
+      <p>אם יש לך בעיות בהתחברות, פנה למנהל שלך</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../config.js"></script>
+<script src="../../scripts/ajaxCalls.js"></script>
+<script src="login.js"></script>
+</body>
+</html>

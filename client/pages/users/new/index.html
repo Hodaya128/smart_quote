@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="../../../images/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>הוספת משתמש</title>
+  <link rel="stylesheet" href="../../../styles.css" />
+  <link rel="stylesheet" href="../../../header/header.css" />
+  <script src="../../../scripts/auth.js"></script>
+</head>
+<body>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../../header/header.js"></script>
+
+<main>
+  <div class="page-title-row">
+    <div>
+      <h1>הוספת משתמש</h1>
+      <p>מילוי פרטי המשתמש החדש</p>
+    </div>
+  </div>
+
+  <form id="addUserForm">
+    <div class="form-group">
+      <label>אימייל</label>
+      <input type="email" id="email" placeholder="כתובת אימייל" required />
+    </div>
+    <div class="form-group">
+      <label>תפקיד</label>
+      <select id="type">
+        <option value="Estimator">Estimator</option>
+        <option value="Manager">Manager</option>
+        <option value="Admin">Admin</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>סיסמה</label>
+      <input type="password" id="password" placeholder="סיסמה" required />
+    </div>
+    <button type="submit" class="button-add" id="saveBtn">צור משתמש</button>
+    <div id="loader" class="loader">
+      <label>טוען</label>
+      <img src="../../../images/loader.gif" style="width:40px;" />
+    </div>
+  </form>
+</main>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../../config.js"></script>
+<script src="addUser.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Core" Version="1.35.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.0" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.62" />
+  </ItemGroup>
+
+  <!-- קוד ה-Selenium שהוצא מהפלואו נשמר כאן לשחזור עתידי אך אינו מקומפל.
+       שחזור: ראה legacy/SeleniumScraping/README.md (כולל החזרת חבילות Selenium). -->
+  <ItemGroup>
+    <Compile Remove="legacy\**\*.cs" />
+    <None Include="legacy\**\*" />
+  </ItemGroup>
+
+</Project>

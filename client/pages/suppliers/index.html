@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="../../images/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ספקים</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../header/header.css" />
+</head>
+<body>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../scripts/auth.js"></script>
+<script src="../../header/header.js"></script>
+
+
+<main>
+  <div class="page-title-row">
+    <div>
+      <h1>ספקים</h1>
+      <p>רשימת כל הספקים וניהול פרטיהם</p>
+    </div>
+    <button class="button-add" onclick="window.location.href='new'">+ הוספת ספק</button>
+  </div>
+
+
+    <div class="search-wrapper">
+      <img src="../../images/search.png" alt="" class="search-icon" />
+      <input type="text" id="searchInput" placeholder="חיפוש לפי שם ספק..." />
+    </div>
+
+    <!-- Supplier List -->
+    <div id="suppliersContainer"></div>
+</main>
+
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../config.js"></script>
+<script src="../../scripts/ajaxCalls.js"></script>
+<div id="editSupplierModal" class="edit-modal-overlay">
+  <div class="edit-modal">
+    <button class="modal-close" id="closeSupplierModal">&times;</button>
+    <h2>עריכת ספק</h2>
+    <form id="editSupplierForm">
+      <input type="hidden" id="editSupplierID" />
+      <div class="form-group">
+        <label>שם ספק</label>
+        <input type="text" id="editSupplierName" required />
+      </div>
+      <div class="form-group">
+        <label>אתר אינטרנט</label>
+        <input type="text" id="editWebsiteUrl" />
+      </div>
+      <button type="submit" class="button-add">שמור</button>
+    </form>
+  </div>
+</div>
+
+<script src="suppliers.js"></script>
+<script>if (!isAdminOrManager()) { $('.button-add, .icon-delete, .icon-edit').hide(); }</script>
+</body>
+</html>

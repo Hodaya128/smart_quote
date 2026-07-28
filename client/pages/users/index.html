@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="../../images/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>משתמשים</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../header/header.css" />
+</head>
+<body>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../scripts/auth.js"></script>
+<script>requireManager();</script>
+<script src="../../header/header.js"></script>
+
+<main>
+  <div class="page-title-row">
+    <div>
+      <h1>משתמשים</h1>
+      <p>רשימת כל המשתמשים וניהול הרשאותיהם</p>
+    </div>
+    <button class="button-add" onclick="window.location.href='new'">+ הוספת משתמש</button>
+  </div>
+
+  <div class="search-wrapper">
+    <img src="../../images/search.png" alt="" class="search-icon" />
+    <input type="text" id="searchInput" placeholder="חיפוש לפי אימייל..." />
+  </div>
+
+  <div id="usersContainer"></div>
+</main>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../config.js"></script>
+<div id="editUserModal" class="edit-modal-overlay">
+  <div class="edit-modal">
+    <button class="modal-close" id="closeUserModal">&times;</button>
+    <h2>עריכת משתמש</h2>
+    <form id="editUserForm">
+      <input type="hidden" id="editUserID" />
+      <div class="form-group">
+        <label>אימייל</label>
+        <input type="email" id="editUserEmail" required />
+      </div>
+      <div class="form-group">
+        <label>תפקיד</label>
+        <select id="editUserType">
+          <option value="Estimator">Estimator</option>
+          <option value="Manager">Manager</option>
+          <option value="Admin">Admin</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>סיסמה חדשה (השאר ריק לאי שינוי)</label>
+        <input type="password" id="editUserPassword" />
+      </div>
+      <button type="submit" class="button-add">שמור</button>
+    </form>
+  </div>
+</div>
+
+<script src="users.js"></script>
+</body>
+</html>

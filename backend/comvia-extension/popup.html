@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <style>
+    :root {
+      --primary: #03518E;
+      --accent: #5b7fa6;
+      --ok: #2e9e5b;
+      --bad: #d9534f;
+      --warn: #f0ad4e;
+      --muted: #8a94a3;
+      --border: #e4e9f0;
+      --bg-soft: #f5f8fb;
+    }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      width: 340px; margin: 0; padding: 0;
+      color: #24303e; background: #fff;
+    }
+
+    /* ===== כותרת ===== */
+    header {
+      background: linear-gradient(135deg, var(--primary), #0a6ab4);
+      color: #fff; padding: 12px 14px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    header h1 { font-size: 15px; margin: 0; font-weight: 600; }
+    header .sub { font-size: 11px; opacity: .85; margin-top: 2px; }
+
+    section { padding: 10px 14px; }
+    .section-title {
+      font-size: 11px; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .4px;
+      margin: 2px 0 8px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    /* ===== שרת ===== */
+    .server-row { display: flex; gap: 6px; }
+    .server-row input {
+      flex: 1; box-sizing: border-box; padding: 7px 9px; font-size: 12.5px;
+      border: 1px solid var(--border); border-radius: 7px; outline: none;
+    }
+    .server-row input:focus { border-color: var(--accent); }
+    .server-row button { flex: 0 0 auto; }
+
+    /* ===== כפתורים ===== */
+    button {
+      font-family: inherit; font-size: 12px; cursor: pointer;
+      border: 1px solid var(--border); background: #fff; color: #3c4a5d;
+      border-radius: 7px; padding: 6px 10px;
+      transition: background .12s ease, border-color .12s ease;
+    }
+    button:hover { background: var(--bg-soft); border-color: var(--accent); }
+    button.primary {
+      background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600;
+    }
+    button.primary:hover { filter: brightness(1.1); }
+    button.link {
+      border: none; background: none; color: var(--primary); padding: 2px 4px; font-size: 11.5px;
+    }
+    button.link:hover { text-decoration: underline; background: none; }
+
+    /* ===== רשימת אתרים ===== */
+    .sites { border-top: 1px solid var(--border); }
+    .site {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 0; border-bottom: 1px solid var(--border);
+    }
+    .site:last-child { border-bottom: none; }
+    .dot {
+      flex: 0 0 auto; width: 10px; height: 10px; border-radius: 50%;
+      background: #b9c2cd;
+    }
+    .dot.ok { background: var(--ok); box-shadow: 0 0 0 3px rgba(46,158,91,.15); }
+    .dot.bad { background: var(--bad); box-shadow: 0 0 0 3px rgba(217,83,79,.15); }
+    .dot.warn { background: var(--warn); box-shadow: 0 0 0 3px rgba(240,173,78,.18); }
+    .dot.checking { background: var(--accent); animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+
+    .site-info { flex: 1; min-width: 0; }
+    .site-name { font-size: 13px; font-weight: 600; }
+    .site-state { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .site-state.bad { color: var(--bad); font-weight: 600; }
+    .site-state .user { color: var(--accent); direction: ltr; unicode-bidi: embed; }
+
+    .site-actions { flex: 0 0 auto; display: flex; gap: 4px; }
+    .site-actions button { padding: 4px 9px; font-size: 11.5px; }
+
+    /* ===== שורת שרת (סטטוס) ===== */
+    .server-status {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg-soft); border-radius: 8px; padding: 7px 10px; margin-top: 8px;
+      font-size: 12px;
+    }
+
+    footer {
+      padding: 8px 14px 10px; font-size: 10.5px; color: var(--muted);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Comvia Price Agent</h1>
+      <div class="sub">שליפת מחירים מהסשן המחובר שלך</div>
+    </div>
+  </header>
+
+  <section>
+    <div class="section-title">שרת Comvia</div>
+    <div class="server-row">
+      <input id="serverUrl" placeholder="https://your-comvia-server" />
+      <button id="save" class="primary">שמור</button>
+    </div>
+    <div class="server-status">
+      <span id="serverDot" class="dot"></span>
+      <span id="serverText">שרת: לא מוגדר</span>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">
+      אתרי ספקים
+      <button id="checkAll" class="link">בדוק את כולם</button>
+    </div>
+    <div id="sitesList" class="sites"></div>
+  </section>
+
+  <footer>
+    <span id="updated"></span>
+    <span>הסיסמאות לא נשמרות בתוסף</span>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>

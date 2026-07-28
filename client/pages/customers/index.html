@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="../../images/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>לקוחות</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../header/header.css" />
+</head>
+<body>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../scripts/auth.js"></script>
+<script src="../../header/header.js"></script>
+
+<main>
+  <div class="page-title-row">
+    <div>
+      <h1>לקוחות</h1>
+      <p>רשימת כל הלקוחות וניהול פרטיהם</p>
+    </div>
+    <button class="button-add" onclick="window.location.href='new'">+ הוספת לקוח</button>
+  </div>
+
+  <div class="search-wrapper">
+    <img src="../../images/search.png" alt="" class="search-icon" />
+    <input type="text" id="searchInput" placeholder="חיפוש לפי שם לקוח..." />
+  </div>
+
+  <div id="customersContainer"></div>
+</main>
+
+<!-- Customer Detail Modal -->
+<div id="customerModal" class="cust-modal-overlay" style="display:none;">
+  <div class="cust-modal-content">
+    <button class="cust-modal-close" id="closeCustomerModal">&times;</button>
+    <h2 class="cust-modal-title" id="customerModalTitle">פרטי לקוח</h2>
+
+    <!-- View mode: read-only info -->
+    <div id="custViewSection">
+      <div class="cust-info-grid">
+        <div class="cust-info-item"><span class="cust-info-label">שם לקוח</span><span class="cust-info-value" id="modalContactName"></span></div>
+        <div class="cust-info-item"><span class="cust-info-label">אימייל</span><span class="cust-info-value" id="modalEmail"></span></div>
+        <div class="cust-info-item"><span class="cust-info-label">טלפון</span><span class="cust-info-value" id="modalPhone"></span></div>
+        <div class="cust-info-item cust-info-full"><span class="cust-info-label">כתובת</span><span class="cust-info-value" id="modalAddress"></span></div>
+      </div>
+    </div>
+
+    <!-- Edit mode: form -->
+    <div id="custEditSection">
+    <div id="modalEditSuccess" style="display:none;background:#d4edda;color:#155724;padding:8px 12px;border-radius:6px;margin-bottom:12px;font-size:14px;">הפרטים נשמרו בהצלחה ✓</div>
+    <form id="modalEditCustomerForm" style="margin-bottom:24px;">
+      <input type="hidden" id="modalEditCustomerID" />
+      <div class="form-group">
+        <label>שם לקוח</label>
+        <input type="text" id="modalEditCustomerName" required />
+      </div>
+      <div class="form-group">
+        <label>אימייל</label>
+        <input type="text" id="modalEditCustomerEmail" />
+      </div>
+      <div class="form-group">
+        <label>טלפון</label>
+        <input type="text" id="modalEditCustomerPhone" />
+      </div>
+      <div class="form-group">
+        <label>כתובת</label>
+        <input type="text" id="modalEditCustomerAddress" />
+      </div>
+      <button type="submit" class="button-add">שמור שינויים</button>
+    </form>
+    </div><!-- end custEditSection -->
+
+    <div class="cust-quotes-section">
+      <h3 class="cust-quotes-title">הצעות מחיר משויכות</h3>
+      <div id="modalQuotesContainer"></div>
+    </div>
+  </div>
+</div>
+
+<style>
+.cust-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.cust-modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 32px 36px;
+  width: 90%;
+  max-width: 680px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+  position: relative;
+  direction: rtl;
+}
+.cust-modal-close {
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #888;
+  line-height: 1;
+}
+.cust-modal-close:hover { color: #333; }
+.cust-modal-title {
+  margin: 0 0 24px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #222;
+}
+.cust-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.cust-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cust-info-full {
+  grid-column: 1 / -1;
+}
+.cust-info-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.cust-info-value {
+  font-size: 15px;
+  color: #333;
+  font-weight: 500;
+}
+.cust-quotes-section {
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+}
+.cust-quotes-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 14px;
+}
+.cust-quotes-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.cust-quotes-table th {
+  background: #f8f9fa;
+  padding: 10px 12px;
+  text-align: right;
+  font-weight: 600;
+  color: #555;
+  border-bottom: 2px solid #e9ecef;
+}
+.cust-quotes-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  color: #444;
+}
+.cust-quotes-table tr:last-child td { border-bottom: none; }
+.cust-quotes-table tr:hover td { background: #fafbfc; }
+.cust-quote-link {
+  color: #5b7fa6;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+.cust-quote-link:hover { text-decoration: underline; }
+.cust-no-quotes {
+  text-align: center;
+  color: #999;
+  padding: 24px 0;
+  font-size: 14px;
+}
+.cust-edit-btn {
+  background: #5b7fa6;
+  color: white;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.cust-edit-btn:hover { background: #4a6d91; }
+</style>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../config.js"></script>
+<script src="../../scripts/ajaxCalls.js"></script>
+<script src="../../scripts/statusHelper.js"></script>
+<script src="customers.js"></script>
+<script>if (!isAdminOrManager()) { $('.button-add, .icon-delete, .icon-edit').hide(); }</script>
+</body>
+</html>

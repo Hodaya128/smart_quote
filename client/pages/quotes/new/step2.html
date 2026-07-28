@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="../../../images/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>הצעה חדשה — שלב 2</title>
+  <link rel="stylesheet" href="../../../styles.css" />
+  <link rel="stylesheet" href="../../../header/header.css" />
+  <link rel="stylesheet" href="newQuote.css" />
+</head>
+<body>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../../scripts/auth.js"></script>
+<script src="../../../header/header.js"></script>
+
+<main>
+
+  <div class="stepper">
+      <div class="step-item" onclick="window.location.href='index.html'" style="cursor:pointer;">
+      <div class="step-circle done">✓</div>
+      <span class="step-label done">הזנת פריטים</span>
+    </div>
+    <div class="step-connector done"></div>
+    <div class="step-item">
+      <div class="step-circle active">2</div>
+      <span class="step-label active">סקירה ועריכה</span>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-circle">3</div>
+      <span class="step-label">ייצוא</span>
+    </div>
+  </div>
+
+
+  <div class="wizard-card">
+    <div class="page-title-row" style="padding-top:0; padding-bottom: 20px;">
+      <div>
+        <h1>הצעה חדשה</h1>
+        <p>שלב 2 מתוך 3 — סקירה ועריכת פרטי ההצעה</p>
+      </div>
+    </div>
+
+
+    <div id="loadingOverlay" class="loading-overlay">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">מתבצעת השוואת מחירים...</p>
+      <p class="loading-subtext">אנא המתינו, התהליך עשוי להימשך מספר שניות</p>
+      <button class="button-add" id="bgBtnStep2" style="background:#e67e22; margin-top:20px;">המשך ברקע</button>
+    </div>
+
+
+    <div id="errorOverlay" class="loading-overlay" style="display:none;">
+      <p class="loading-text" style="color:#c0392b;">שגיאה בטעינת המחירים</p>
+      <p class="loading-subtext" id="errorDetail"></p>
+      <button class="button-add" onclick="location.reload()" style="margin-top:16px;">נסה שוב</button>
+    </div>
+
+
+    <div id="reviewTableWrapper" style="display:none; overflow-x: auto;">
+      <table class="data-table" id="reviewTable">
+        <thead>
+          <tr>
+            <th>מק"ט</th>
+            <th>תיאור פריט</th>
+            <th>כמות</th>
+            <th>ספק</th>
+            <th>מחיר ספק ($)</th>
+            <th>מחיר מתחרים ($)</th>
+            <th>תצורת אספקה</th>
+            <th>רווח %</th>
+            <th>מחיר סופי ($)</th>
+          </tr>
+        </thead>
+        <tbody id="reviewBody">
+        </tbody>
+        <tfoot>
+          <tr id="totalRow">
+            <td colspan="8" style="text-align:left;">סה"כ</td>
+            <td id="totalFinal">—</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+
+    <div class="wizard-actions">
+      <button class="btn-cancel" onclick="window.location.href='index.html'">חזרה לשלב 1 →</button>
+      <button class="button-add" id="nextBtn" style="display:none;">← המשך לשלב 3</button>
+    </div>
+  </div>
+
+</main>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../../config.js"></script>
+<script>
+  // Items enriched with API data
+  let enrichedItems = [];
+
+  // Display customer name if available
+  const customerName = localStorage.getItem('quoteCustomerName');
+  if (customerName) {
+    $('.page-title-row p').after('<p style="font-weight:600; color:#5b7fa6;">לקוח: ' + customerName + '</p>');
+  }
+
+  // Read saved items from step 1
+  const savedItems = JSON.parse(localStorage.getItem('quoteItems') || '[]');
+  if (savedItems.length === 0) {
+    window.location.href = 'index.html';
+  }
+
+
+  const draftId = localStorage.getItem('quoteFromDraft');
+  const savedSearchResults = localStorage.getItem('quoteSearchResults');
+
+
+  $('#bgBtnStep2').click(function() {
+    const custID = localStorage.getItem('quoteCustomerID');
+    if (!custID) {
+      alert('לא נבחר לקוח. חזרי לשלב 1.');
+      return;
+    }
+
+    $(this).prop('disabled', true).text('שומר...');
+
+    $.ajax({
+      url: BASE_URL + '/api/PriceComparison/search-background',
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({
+        customerID: parseInt(custID),
+        items: savedItems.map(i => ({ sku: i.sku, qty: i.qty, config: i.config }))
+      }),
+      success: function(res) {
+        localStorage.removeItem('quoteItems');
+        localStorage.removeItem('quoteCustomerID');
+        localStorage.removeItem('quoteCustomerName');
+        // Navigate to quotes list with message
+        localStorage.setItem('bgMessage', 'הצעה #' + res.quoteID + ' נוצרה ומעובדת ברקע');
+        window.location.href = '../index.html';
+      },
+      error: function() {
+        alert('שגיאה ביצירת הצעה ברקע');
+        $('#bgBtnStep2').prop('disabled', false).text('המשך ברקע');
+      }
+    });
+  });
+
+  if (draftId && savedSearchResults) {
+
+    const response = JSON.parse(savedSearchResults);
+    processResponse(response);
+    localStorage.removeItem('quoteSearchResults');
+  } else {
+
+    $.ajax({
+      url: BASE_URL + '/api/PriceComparison/search',
+      method: 'POST',
+      contentType: 'application/json',
+      timeout: 300000,
+      data: JSON.stringify({
+        items: savedItems.map(i => ({ sku: i.sku, qty: i.qty, config: i.config }))
+      }),
+      success: function(response) {
+        processResponse(response);
+      },
+      error: function(xhr) {
+        $('#loadingOverlay').hide();
+        let detail = 'לא ניתן להתחבר לשירות השוואת המחירים';
+        if (xhr.responseJSON?.message) detail = xhr.responseJSON.message;
+        $('#errorDetail').text(detail);
+        $('#errorOverlay').show();
+      }
+    });
+  }
+
+  function processResponse(response) {
+      enrichedItems = response.results.map((r, idx) => {
+        const competitorNames = ['mouser', 'digikey', 'mouser electronics', 'mouser electronics inc.'];
+        // Separate Mouser/DigiKey from NetComponents suppliers into competitors
+        const allSupp = (r.suppliers || []).filter(s => !competitorNames.includes((s.name || '').toLowerCase()));
+        const movedToComp = (r.suppliers || []).filter(s => competitorNames.includes((s.name || '').toLowerCase()))
+          .map(s => ({ ...s, source: s.name }));
+        const allComp = [...(r.competitors || []), ...movedToComp];
+
+
+        let cheapestSupp = null;
+        allSupp.forEach((s, si) => {
+          if (s.unitPrice != null && (!cheapestSupp || s.unitPrice < cheapestSupp.unitPrice)) {
+            cheapestSupp = { ...s, _index: si };
+          }
+        });
+
+
+        let cheapestComp = null;
+        allComp.forEach(c => {
+          if (c.unitPrice != null && (!cheapestComp || c.unitPrice < cheapestComp.unitPrice)) {
+            cheapestComp = c;
+          }
+        });
+
+        return {
+          sku: r.sku,
+          qty: r.qty,
+          desc: cheapestSupp?.description || allComp[0]?.description || '',
+          supplier: cheapestSupp?.name || 'N/A',
+          selectedSupplierIdx: cheapestSupp?._index ?? -1,
+          unitPrice: cheapestSupp?.unitPrice || 0,
+          compPrice: cheapestComp?.unitPrice || 0,
+          compSource: cheapestComp?.source || '',
+          margin: 0,
+          config: savedItems[idx]?.config || 'Reel',
+          allSuppliers: allSupp,
+          allCompetitors: allComp
+        };
+      });
+
+      $('#loadingOverlay').hide();
+      $('#reviewTableWrapper').show();
+      $('#nextBtn').show();
+      renderTable();
+  }
+
+  function calcFinal(unitPrice, margin) {
+    return (unitPrice * (1 + margin / 100)).toFixed(2);
+  }
+
+  function renderTable() {
+    const tbody = $('#reviewBody');
+    tbody.empty();
+    const cols = 9;
+
+    enrichedItems.forEach((item, i) => {
+      const finalPrice = calcFinal(item.unitPrice, item.margin);
+      const compDisplay = item.compPrice > 0 ? '$' + item.compPrice.toFixed(2) : 'N/A';
+      const priceDisplay = item.unitPrice > 0 ? '$' + item.unitPrice.toFixed(2) : 'N/A';
+
+      // Summary row
+      tbody.append(`
+        <tr class="summary-row" data-index="${i}" style="cursor:pointer;" onclick="toggleRow(${i})">
+          <td>
+            <span class="row-arrow" id="arrow-${i}"><img src="../../../images/arrow_left.png" style="width:14px;height:14px;vertical-align:middle;" /></span>
+            ${item.sku}
+          </td>
+          <td><label>${item.desc}</label></td>
+          <td><input type="number" value="${item.qty}" min="1" style="width:70px" onclick="event.stopPropagation()" oninput="enrichedItems[${i}].qty=+this.value; updateTotal()" /></td>
+          <td><label style="text-decoration:underline;">${item.supplier}</label></td>
+          <td><label>${priceDisplay}</label></td>
+          <td><label>${compDisplay}${item.compSource ? ' (' + item.compSource + ')' : ''}</label></td>
+          <td>
+            <select onclick="event.stopPropagation()" oninput="enrichedItems[${i}].config=this.value">
+              <option ${item.config==='Reel'?'selected':''}>Reel</option>
+              <option ${item.config==='Cut Tape'?'selected':''}>Cut Tape</option>
+              <option ${item.config==='Bulk'?'selected':''}>Bulk</option>
+            </select>
+          </td>
+          <td><input type="number" step="1" value="${item.margin}" style="width:60px" onclick="event.stopPropagation()" oninput="enrichedItems[${i}].margin=+this.value; updateRow(${i})" /></td>
+          <td id="final-${i}"><strong>${item.unitPrice > 0 ? '$' + finalPrice : 'N/A'}</strong></td>
+        </tr>
+      `);
+
+      // Detail row - suppliers + competitors
+      const suppRows = item.allSuppliers.map((s, si) => {
+        const sPrice = s.unitPrice != null ? '$' + s.unitPrice.toFixed(4) : 'N/A';
+        const isSelected = item.selectedSupplierIdx === si;
+        return `<tr>
+          <td>${s.name || 'לא ידוע'}</td>
+          <td>${s.country || ''}</td>
+          <td>${sPrice}</td>
+          <td>${s.qtyAvailable || ''}</td>
+          <td>${s.link ? '<a href="' + s.link + '" target="_blank">קישור</a>' : ''}</td>
+          <td>${isSelected
+            ? '<img src="../../../images/checkmark.png" style="width:18px;height:18px;vertical-align:middle;" /> <span>הספק הנבחר</span>'
+            : (s.unitPrice != null
+              ? '<button class="btn-choose-supplier" onclick="chooseSupplier(' + i + ', ' + si + ')">בחר ספק זה</button>'
+              : '')
+          }</td>
+        </tr>`;
+      }).join('');
+
+      const compRows = item.allCompetitors.map(c => {
+        const cPrice = c.unitPrice != null ? '$' + c.unitPrice.toFixed(4) : 'N/A';
+        return `<tr>
+          <td>${c.source || ''}</td>
+          <td>${c.manufacturer || ''}</td>
+          <td>${cPrice}</td>
+          <td>${c.qtyAvailable || ''}</td>
+          <td>${c.description || ''}</td>
+          <td></td>
+        </tr>`;
+      }).join('');
+
+      tbody.append(`
+        <tr class="detail-row" id="detail-${i}" style="display:none;">
+          <td colspan="${cols}" style="padding:0;">
+            <div class="row-detail-panel">
+              <h3>ספקים</h3>
+              <table class="suppliers-table">
+                <thead>
+                  <tr>
+                    <th>שם ספק</th>
+                    <th>מדינה</th>
+                    <th>מחיר ($)</th>
+                    <th>כמות זמינה</th>
+                    <th>קישור</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>${suppRows || '<tr><td colspan="6">לא נמצאו ספקים</td></tr>'}</tbody>
+              </table>
+
+              <h3 style="margin-top:16px;">מתחרים </h3>
+              <table class="suppliers-table">
+                <thead>
+                  <tr>
+                    <th>מקור</th>
+                    <th>יצרן</th>
+                    <th>מחיר ($)</th>
+                    <th>כמות זמינה</th>
+                    <th>תיאור</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>${compRows || '<tr><td colspan="6">לא נמצאו תוצאות</td></tr>'}</tbody>
+              </table>
+            </div>
+          </td>
+        </tr>
+      `);
+    });
+
+    updateTotal();
+  }
+
+  function chooseSupplier(itemIdx, supplierIdx) {
+    const s = enrichedItems[itemIdx].allSuppliers[supplierIdx];
+    enrichedItems[itemIdx].supplier = s.name;
+    enrichedItems[itemIdx].selectedSupplierIdx = supplierIdx;
+    enrichedItems[itemIdx].unitPrice = s.unitPrice || 0;
+    enrichedItems[itemIdx].desc = s.description || enrichedItems[itemIdx].desc;
+    updateRow(itemIdx);
+    renderTable();
+    toggleRow(itemIdx);
+  }
+
+  function toggleRow(i) {
+    const detail = $(`#detail-${i}`);
+    const arrow = $(`#arrow-${i} img`);
+    const isOpen = detail.is(':visible');
+    detail.toggle(!isOpen);
+    arrow.attr('src', isOpen ? '../../../images/arrow_left.png' : '../../../images/arrow_down.png');
+  }
+
+  function updateRow(i) {
+    const final = calcFinal(enrichedItems[i].unitPrice, enrichedItems[i].margin);
+    $(`#final-${i}`).html(`<strong>${enrichedItems[i].unitPrice > 0 ? '$' + final : 'N/A'}</strong>`);
+    updateTotal();
+  }
+
+  function updateTotal() {
+    let total = 0;
+    enrichedItems.forEach(item => {
+      if (item.unitPrice > 0) {
+        total += item.qty * parseFloat(calcFinal(item.unitPrice, item.margin));
+      }
+    });
+    $('#totalFinal').html(`<strong>$${total.toFixed(2)}</strong>`);
+  }
+
+  $('#nextBtn').click(() => {
+    localStorage.setItem('quoteItems', JSON.stringify(enrichedItems));
+    window.location.href = 'step3.html';
+  });
+</script>
+</body>
+</html>

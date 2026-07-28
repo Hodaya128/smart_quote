@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="../../images/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>הצעת מחיר</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../header/header.css" />
+  <link rel="stylesheet" href="quote.css" />
+  <script src="../../scripts/auth.js"></script>
+</head>
+<body>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../header/header.js"></script>
+
+<main>
+  <div class="page-title-row">
+    <div>
+      <h1>הצעת מחיר</h1>
+      <p id="quoteSubtitle">טוען...</p>
+    </div>
+    <button class="button-add" id="editQuoteBtn" style="display:none;">✏ עריכה</button>
+  </div>
+
+  <div class="quote-container">
+    <div class="quote-header-row">
+      <span id="quoteID" class="quote-id">—</span>
+      <span id="customerName" class="quote-customer">—</span>
+      <span id="createdDate" class="quote-date">—</span>
+      <span id="status" class="quote-status">—</span>
+    </div>
+
+    <div class="quote-totals-row">
+      <div class="quote-total-item">
+        <span class="quote-total-label">סכום סופי</span>
+        <span class="quote-total-value" id="finalTotalPrice">—</span>
+      </div>
+      <div class="quote-total-item">
+        <span class="quote-total-label">רווח</span>
+        <span class="quote-total-value" id="totalProfit">—</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="quoteItemsSection" style="display:none; margin-top:24px;">
+    <h3 class="quote-items-title">פירוט פריטים</h3>
+    <div style="overflow-x:auto;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>מק"ט</th>
+            <th>תיאור</th>
+            <th>כמות</th>
+            <th>ספק</th>
+            <th>תצורת אספקה</th>
+            <th>מחיר עלות ($)</th>
+            <th>רווח %</th>
+            <th>מחיר ללקוח ($)</th>
+          </tr>
+        </thead>
+        <tbody id="quoteItemsBody"></tbody>
+        <tfoot id="quoteItemsFoot"></tfoot>
+      </table>
+    </div>
+  </div>
+
+  </div> <!-- סוף quoteItemsSection -->
+
+  <!-- כפתור בדיקת חלופות -->
+  <div style="margin-top:16px;">
+    <button class="button-add" id="checkAlternativesBtn" style="display:none;">
+      💡 בדוק חלופות
+    </button>
+  </div>
+
+</main>
+
+<!-- פופאפ המלצות -->
+<div id="recommendationsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999;">
+  <div style="background:white; margin:5% auto; padding:24px; width:70%; border-radius:8px; max-height:80vh; overflow-y:auto;">
+    <h3>💡 המלצות לחיסכון</h3>
+    <div id="recommendationsContent"></div>
+    <button class="button-add" onclick="$('#recommendationsModal').hide()">סגור</button>
+  </div>
+</div>
+
+</main>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../config.js"></script>
+<script src="../../scripts/ajaxCalls.js"></script>
+<script src="../../scripts/statusHelper.js"></script>
+<script src="quote.js"></script>
+</body>
+</html>

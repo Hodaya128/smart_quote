@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="../../images/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>הגדרות</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../header/header.css" />
+</head>
+<body>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../scripts/auth.js"></script>
+<script>requireManager();</script>
+<script src="../../header/header.js"></script>
+
+<main>
+  <div class="page-title-row">
+    <h1>הגדרות</h1>
+  </div>
+
+  <form id="settingsForm">
+
+    <div class="form-group">
+      <label>סף רווחיות מינימלי (%)</label>
+      <input type="number" id="minProfit" />
+    </div>
+
+    <div class="form-group">
+      <label>סף חיסכון למוצר חלופי (%)</label>
+      <input type="number" id="minSavingAlt" />
+    </div>
+
+    <div class="form-group">
+      <label>סף חיסכון לתצורת אספקה חלופית (%)</label>
+            <input type="number" id="minSavingSupply" />
+    </div>
+
+    <div class="form-group">
+      <label>אחוז מקסימלי להגדלת כמות (%)</label>
+        <input type="number" id="maxQtyIncrease" />
+    </div>
+
+    <div class="form-group">
+      <label>סף חיסכון ליחידה בהגדלת כמות (%)</label>
+        <input type="number" id="minSavingQty" />
+    </div>
+
+    <div class="form-group">
+      <label>מטבע תצוגה</label>
+      <select id="preferredCurrency">
+        <option value="USD">דולר אמריקאי (USD)</option>
+        <option value="ILS">שקל ישראלי (ILS)</option>
+        <option value="EUR">אירו (EUR)</option>
+        <option value="GBP">פאונד בריטי (GBP)</option>
+      </select>
+    </div>
+
+    <button type="submit" class="button-add">שמור שינויים</button>
+
+  </form>
+</main>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="../../config.js"></script>
+<script src="../../scripts/ajaxCalls.js"></script>
+<script src="settings.js"></script>
+</body>
+</html>
